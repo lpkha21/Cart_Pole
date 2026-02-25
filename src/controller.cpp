@@ -122,7 +122,7 @@ public:
         {
             y = -posComp->Data()[0];
         }
-        double pole_error = theta_ref - theta;
+        double pole_error = wrapToPi(theta_ref - theta);
         double omega = (theta_raw - prev_theta) / dt;
         double pole_d_raw = -omega;
         prev_theta = theta_raw;
@@ -167,24 +167,24 @@ public:
   
         output = u_balance;
   
-        if(abs(theta) >= M_PI/3){
-            double w = std::exp(-(theta*theta)/0.5);
-            output = (1.0 - w) * u_swing + w * u_balance;
-            static int kick_dir = 1;
-            static int in_bottom_prev = false;
+        
+        double w = std::exp(-(theta*theta)/0.5);
+        output = (1.0 - w) * u_swing + w * u_balance;
+        static int kick_dir = 1;
+        static int in_bottom_prev = false;
 
-            bool in_bottom = ( (M_PI - std::abs(theta)) < 0.08 ) && (std::abs(omega) < 0.2);
+        bool in_bottom = ( (M_PI - std::abs(theta)) < 0.08 ) && (std::abs(omega) < 0.2);
 
-            if (!in_bottom_prev && in_bottom)
-            {
-                kick_dir = (theta >= 0.0) ? 1 : -1;
-            }
-
-            if (in_bottom)
-                output = 20.0 * kick_dir;
-
-            in_bottom_prev = in_bottom;
+        if (!in_bottom_prev && in_bottom)
+        {
+            kick_dir = (theta >= 0.0) ? 1 : -1;
         }
+
+        if (in_bottom)
+            output = 20.0 * kick_dir;
+
+        in_bottom_prev = in_bottom;
+    
         
         if(abs(omega) >= 8.0) output = 0;
         // Applying Force
@@ -214,6 +214,7 @@ private:
     std::unique_ptr<gz::transport::Node> node;
     double y_des = 0.0;
     
+    bool in_balance = false;
 
     double y = 0.0;
     double LINEAR_LENGTH = 30;
@@ -233,7 +234,7 @@ private:
     double Kd1 = 120.0;
     // double lastError1 = 0.0;
     double intClamp1 = 7.0;
-    double theta_clamp = 0.22;
+    double theta_clamp = 0.5;
 
     double uprightThreshold = M_PI / 2;
 
