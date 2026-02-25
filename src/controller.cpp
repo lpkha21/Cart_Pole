@@ -132,7 +132,6 @@ public:
         // Controll Loop 2 (position) @200Hz
         if(outerTimer >= outerDt) {
             cart_error = y_des - y;
-            // theta_clamp = cart_error * THETA_CLAMP_MAX / LINEAR_LENGTH * 3.5 + THETA_CLAMP_MIN;
             
             double cart_d_raw = (cart_error - lastError2) / outerDt;
             cart_d_filtered = d_alpha_outer * cart_d_filtered + (1.0 - d_alpha_outer) * cart_d_raw;
@@ -145,21 +144,14 @@ public:
             theta_ref = std::clamp(theta_ref_raw, -theta_clamp, theta_clamp);
             outerTimer -= outerDt;
         }
-        double g = 9.81;
-        double l = 0.5;
 
-        double E = 0.5 * (l * omega) * (l * omega)
-         + g * l * (1.0 - std::cos(theta));
 
-        double E_des = 2.0 * g * l; 
+        double E = 0.5 * (l*l) * omega*omega
+         + g*l*(1.0 + std::cos(theta));
 
-        double kE = 2.0;  // gain for energy shaping
-        double u_swing = kE * omega * std::cos(theta);
-
-        // Blend weight (angle-dominant so we can capture)
-        double angle_weight = std::exp(-(theta*theta) / 0.08);
-        double vel_weight   = 1.0 / (1.0 + 0.2 * omega * omega);
-        double w = std::clamp(angle_weight * vel_weight, 0.0, 1.0);
+        double E_des = 2.0 * g * l;
+        
+        double u_swing = kE * (E_des - E) * omega * std::cos(theta);
 
         // BALANCE MODE
         pole_d_filtered = d_alpha_inner * pole_d_filtered 
@@ -179,15 +171,19 @@ public:
             double w = std::exp(-(theta*theta)/0.5);
             output = (1.0 - w) * u_swing + w * u_balance;
             static int kick_dir = 1;
+            static int in_bottom_prev = false;
 
-            if (M_PI - abs(theta) < 0.15 && std::abs(omega) < 0.2)
+            bool in_bottom = ( (M_PI - std::abs(theta)) < 0.08 ) && (std::abs(omega) < 0.2);
+
+            if (!in_bottom_prev && in_bottom)
             {
-                output = 30.0 * kick_dir;
-                if(M_PI - abs(theta) >= 0.05){
-                    kick_dir *= -1;
-                }
-                gzmsg << output << std::endl;
+                kick_dir = (theta >= 0.0) ? 1 : -1;
             }
+
+            if (in_bottom)
+                output = 20.0 * kick_dir;
+
+            in_bottom_prev = in_bottom;
         }
         
         if(abs(omega) >= 8.0) output = 0;
@@ -225,7 +221,10 @@ private:
     double theta_raw = 0.0;
 
     double prev_theta = 0.0;
-
+    
+    double g = 9.81;
+    double l = 0.5;
+    double kE = 1; 
 
     double output = 0.0;
     double Kp1 = 240.0;
