@@ -1,2 +1,7 @@
-.vscode
+build/
+*.o
 *.so
+*.a
+CMakeFiles/
+CMakeCache.txt
+.vscode
