@@ -7,6 +7,8 @@ It combines:
 - PD stabilization near upright
 - Smooth transition between modes
 
+[Demo.webm](https://github.com/user-attachments/assets/34ea8a4a-9610-4161-b65f-0805cadea4ba)
+
 ---
 
 ## Overview
