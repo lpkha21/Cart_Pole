@@ -123,7 +123,7 @@ public:
             y = -posComp->Data()[0];
         }
         double pole_error = wrapToPi(theta_ref - theta);
-        double omega = (theta_raw - prev_theta) / dt;
+        double omega = wrapToPi(theta_raw - prev_theta) / dt;
         double pole_d_raw = -omega;
         prev_theta = theta_raw;
         
@@ -189,7 +189,6 @@ public:
         if(abs(omega) >= 8.0) output = 0;
         // Applying Force
         output = std::clamp(output, -maxForce, maxForce);
-        // output = 40;
         auto forceComp = _ecm.Component<components::JointForceCmd>(cartJoint);
         if(forceComp){
             forceComp->Data()[0] = output;
