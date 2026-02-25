@@ -7,7 +7,23 @@ It combines:
 - PD stabilization near upright
 - Smooth transition between modes
 
+[Demo.webm](https://github.com/user-attachments/assets/34ea8a4a-9610-4161-b65f-0805cadea4ba)
+
 ---
+
+## Manual Control
+
+The cart can be controlled manually using Gazebo's **Key Publisher** GUI plugin.
+
+### How to Enable
+
+1. Click the three dots (⋮) in the top-right corner of Gazebo.
+2. Select **Key Publisher**.
+3. Focus the Gazebo window.
+4. Use the following keys:
+
+- `W` → Move cart forward  
+- `S` → Move cart backward  
 
 ## Overview
 
